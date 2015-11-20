@@ -1,0 +1,11 @@
+<template name="main">
+  <header>
+    {{> yield region='header'}}
+  </header>
+  <div id="page-wrapper">
+    {{> yield}}
+  </div>
+  <footer>
+    {{> yield region='footer'}}
+  </footer>
+</template>
