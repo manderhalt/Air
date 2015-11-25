@@ -40,17 +40,13 @@ Router.route('/Station/:_id',{
     path: '/Station/:_id',
     name: 'Station',
     data:function(){
-        //return Contacts.findOne({'_id':new Meteor.Collection.ObjectID(this.params._id)});
+        return Stations.findOne({'_id':new Meteor.Collection.ObjectID(this.params._id)});
     },
     waitOn:function(){
       return [
-        //Meteor.subscribe("Contacts",new Meteor.Collection.ObjectID(this.params._id)),
-        //Meteor.subscribe("Delegates",new Meteor.Collection.ObjectID(this.params._id))
       ]
     },
     onBeforeAction:function(){
-      //Session.set('SelectedContact',new Meteor.Collection.ObjectID(this.params._id));
-      //console.log(Session.get('SelectedContact'));
       this.next();
     }
 });
