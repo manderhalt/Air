@@ -1,5 +1,14 @@
 Meteor.publish("Stations",function(){
-    return Stations.find({},{fields:{name:1,location:1}});
+  var S = Climat.find({
+    date: new Date("2000-01-01T00:00:00Z"),
+    temperature:{$ne:null},
+    precipitation:{$ne:null}
+  }).map(function(x){return x._id_Station})
+
+    return Stations.find({
+      _id:{$in:S},
+      name:{$ne:"BLAGNAC AEROP. TOULOUSE-BLAGNAC"}
+    },{fields:{name:1,location:1}});
 });
 
 Meteor.publish("Climat",function(_id_Station){

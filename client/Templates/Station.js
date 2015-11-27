@@ -16,7 +16,8 @@ Template.Station.onRendered(function(){
   var DailyTemperatureHistChart = dc.barChart('#daily-temperature-hist-chart');
   var DailyPrecipitationHistChart = dc.barChart('#daily-precipitation-hist-chart');
   var rainOrNotChart = dc.pieChart('#rain-or-not');
-  var monthYearChart = dc.compositeChart('#month-year');
+  // var monthYearChart = dc.compositeChart('#month-year');
+  // var brushChart = dc.barChart('#brush-chart');
 
   var data = Climat.find(
     {
@@ -35,9 +36,13 @@ Template.Station.onRendered(function(){
       d.temperature = +d.temperature; // coerce to number
       d.precipitation = +d.precipitation; // coerce to number
   });
-  console.log(data);
+
+
   var ndx = crossfilter(data);
   var all = ndx.groupAll();
+
+  var ndx2 = crossfilter(data);
+  var all2 = ndx2.groupAll();
 
   function reduce_avg_p(p, v) {
     //console.log(v.temperature)
@@ -124,10 +129,17 @@ Template.Station.onRendered(function(){
     return d.monthyear
   });
 
-  var monthYearGroup = monthYear.group().reduce(
-      reduce_avg_p,reduce_avg_m,reduce_avg_i
-      );
-
+  // var monthYearGroup = monthYear.group().reduce(
+  //     reduce_avg_p,reduce_avg_m,reduce_avg_i
+  //     );
+  //
+  // var dayDimension = ndx2.dimension(function (d) {
+  //   return d.date
+  // });
+  //
+  // var dayGroup = dayDimension.group().reduce(
+  //     reduce_avg_p,reduce_avg_m,reduce_avg_i
+  //     );
 
     yearlyBubbleChart
         .width(600)
@@ -174,7 +186,9 @@ Template.Station.onRendered(function(){
         .valueAccessor(function (p) {
             return p.value.Tavg;
         })
-        .colors(colorbrewer.RdYlBu[9].reverse())
+        .colors(function(){
+          var c = colorbrewer.RdYlBu[9]
+          return c.reverse()}())
         .colorDomain([5,22])
         .colorAccessor(function (d) {
           return d.value.Tavg;
@@ -265,42 +279,71 @@ Template.Station.onRendered(function(){
     .renderLabel(true)
     .innerRadius(20)
     .transitionDuration(500)
+    //
+    // monthYearChart
+    //   .width(1200)
+    //   .height(300)
+    //   .transitionDuration(0)
+    //   .margins({top: 30, right: 50, bottom: 25, left: 60})
+    //   .dimension(dayDimension)
+    //   .mouseZoomable(true)
+    //   .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
+    //   .round(d3.time.month.round)
+    //   .xUnits(d3.time.months)
+    //   .elasticY(true)
+    //   .elasticX(true)
+    //   .mouseZoomable(false)
+    //   //.rangeChart(brushChart)
+    //   .renderHorizontalGridLines(true)
+    //   //.legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+    //   .brushOn(false)
+    //   .compose([
+    //       dc.barChart(monthYearChart)
+    //               .group(dayGroup, "Precipitation")
+    //               .valueAccessor(function (d) {
+    //                   return d.value.Psum;
+    //               })
+    //               .ordinalColors(["orange"])
+    //               .useRightYAxis(true),
+    //
+    //       dc.lineChart(monthYearChart)
+    //               .group(dayGroup, "Temperature")
+    //               .valueAccessor(function (d) {
+    //                   return d.value.Tavg;
+    //               })
+    //   ])
+    //   .yAxisLabel("Temperature (°C)")
+    //   .rightYAxisLabel("Precipitation (mm)")
+    //   .renderHorizontalGridLines(true);
 
-    monthYearChart
-      .width(600)
-      .height(300)
-      .transitionDuration(0)
-      .margins({top: 30, right: 50, bottom: 25, left: 60})
-      .dimension(monthYear)
-      .mouseZoomable(true)
-      .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
-      .round(d3.time.month.round)
-      .xUnits(d3.time.months)
-      .elasticY(true)
-      .renderHorizontalGridLines(true)
-      .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
-      .brushOn(true)
-      .compose([
-          dc.barChart(monthYearChart)
-                  .group(monthYearGroup, "Precipitation")
-                  .valueAccessor(function (d) {
-                      console.log(d)
-                      return d.value.Psum;
-                  })
-                  .ordinalColors(["orange"])
-                  .useRightYAxis(true),
-
-          dc.lineChart(monthYearChart)
-                  .group(monthYearGroup, "Temperature")
-                  .valueAccessor(function (d) {
-                      return d.value.Tavg;
-                  })
-      ])
-      .yAxisLabel("Temperature (°C)")
-      .rightYAxisLabel("Precipitation (mm)")
-      .renderHorizontalGridLines(true);
+    // brushChart
+    //   .width(1200)
+    //   .height(60)
+    //   .margins({top: 0, right: 50, bottom: 20, left: 40})
+    //   .dimension(dayDimension)
+    //   .group(dayGroup)
+    //   .centerBar(true)
+    //   .gap(1)
+    //   .valueAccessor(function (d) {
+    //       return d.value.Psum;
+    //   })
+    //   .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
+    //   .round(d3.time.month.round)
+    //   .alwaysUseRounding(true)
+    //   .xUnits(d3.time.months);
 
 dc.renderAll();
 
 
 });
+
+Template.Station.helpers({
+  Neighboor:function(){
+    var n = Stations.findOne({
+      location:{$near:{$geometry:this.location}},
+      _id:{$ne:this._id}
+    })
+    n.distance = Math.round(d3.geo.distance(this.location.coordinates,n.location.coordinates)* 6378.16,0)
+    return n
+  }
+})
