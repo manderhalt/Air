@@ -7,6 +7,8 @@ import LatLon
 import re
 import datetime
 from bson.objectid import ObjectId
+import numpy as np
+import sys
 
 def converter_lat(lat):
     # Latitude in degrees:minutes:seconds (+: North, -: South)
@@ -106,7 +108,12 @@ def main():
     db.drop_collection('Stations')
     db.drop_collection('Precipitations')
     db.drop_collection('Temperatures')
+    db.drop_collection('Climat')
     db.Stations.create_index("sta_id",unique=True)
+    db.Climat.ensure_index([
+        ('_id_Station',pymongo.ASCENDING),
+        ('date',pymongo.ASCENDING),
+        ],unique=True)
     stations_precipitation = read_station(os.path.join('..','data','EOBS','Precipitations','stations.txt'))
     stations_temperature = read_station(os.path.join('..','data','EOBS','Temperatures','stations.txt'))
     stations = []
@@ -116,21 +123,60 @@ def main():
     try:
         db.Stations.insert(stations,continue_on_error=True)
     except:
-        1+1
-
-    for station in stations_precipitation:
+        pass
+    stations = [s for s in db.Stations.find()]
+    for station in stations:
+        sys.stdout.write("Station "+station['name'])
+        # Precipitations
         file_path = os.path.join('..','data','EOBS','Precipitations','RR_STAID'+str(station['sta_id']).zfill(6)+'.txt')
-        station_db = db.Stations.find_one({'sta_id':station['sta_id']})
-        if station_db is not None and os.path.exists(file_path):
-            precipitations = read_precipitation(file_path,station_db['_id'])
-            db.Precipitations.insert(precipitations)
-
-    for station in stations_temperature:
+        if os.path.exists(file_path):
+            precipitations = read_precipitation(file_path,station['_id'])
+            for p in precipitations:
+                db.Climat.update(
+                    {
+                        '_id_Station':p['_id_Station'],
+                        'date':p['date']
+                    },
+                    {"$set":{
+                        '_id_Station':p['_id_Station'],
+                        'date':p['date'],
+                        'precipitation':p['precipitation']
+                        }
+                    },upsert=True,multi=False)
+        # Temperatures
         file_path = os.path.join('..','data','EOBS','Temperatures','TG_STAID'+str(station['sta_id']).zfill(6)+'.txt')
-        station_db = db.Stations.find_one({'sta_id':station['sta_id']})
-        if station_db is not None and os.path.exists(file_path):
-            temperaures = read_temperature(file_path,station_db['_id'])
-            db.Temperatures.insert(temperaures)
+        if os.path.exists(file_path):
+            temperatures = read_temperature(file_path,station['_id'])
+            for t in temperatures:
+                db.Climat.update(
+                    {
+                        '_id_Station':t['_id_Station'],
+                        'date':t['date']
+                    },
+                    {"$set":{
+                        '_id_Station':t['_id_Station'],
+                        'date':t['date'],
+                        'temperature':t['temperature']
+                        }
+                    },upsert=True,multi=False)
+        # Fill documents with none values
+        db.Climat.update(
+            {'temperature':{"$exists":0}},
+            {'$set':{'temperature':None}},
+            upsert=False,multi=True)
+        db.Climat.update(
+            {'precipitation':{"$exists":0}},
+            {'$set':{'precipitation':None}},
+            upsert=False,multi=True)
+        # Replace nan by nones
+        db.Climat.update(
+            {'temperature':np.nan},
+            {'$set':{'temperature':None}},
+            upsert=False,multi=True)
+        db.Climat.update(
+            {'precipitation':np.nan},
+            {'$set':{'precipitation':None}},
+            upsert=False,multi=True)
 
 if __name__ == '__main__':
     main()

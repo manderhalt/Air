@@ -22,3 +22,4 @@ less
 iron:router
 fortawesome:fontawesome
 d3js:d3
+charts:dc

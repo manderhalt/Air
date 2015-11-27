@@ -43,10 +43,12 @@ Router.route('/Station/:_id',{
         return Stations.findOne({'_id':new Meteor.Collection.ObjectID(this.params._id)});
     },
     waitOn:function(){
-      return [
-      ]
+      return Meteor.subscribe("Climat",new Meteor.Collection.ObjectID(this.params._id));
+
     },
     onBeforeAction:function(){
+      Session.set('SelectedStation',new Meteor.Collection.ObjectID(this.params._id));
+      console.log(Session.get('SelectedStation'))
       this.next();
     }
 });
