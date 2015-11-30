@@ -16,7 +16,7 @@ Meteor.publish("Climat",function(_id_Station){
     return Climat.find(
       {
         _id_Station:_id_Station,
-        date:{$gte:new Date(2010,0,1),$lt:new Date(2014,0,1)}
+        date:{$gte:new Date(2000,0,1),$lt:new Date(2014,0,1)}
       },
       {
         fields:

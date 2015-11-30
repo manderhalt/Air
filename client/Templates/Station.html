@@ -1,36 +1,33 @@
 <template name="Station">
-<h1><i class="fa fa-map-marker fa-fw"></i> {{name}}</h1>
-<div id="yearly-bubble-chart">
+<div class="container-fluid" id="ContainerStation">
+  <div class="row">
+    <h2>
+      <i class="fa fa-map-marker fa-fw"></i> {{name}}
+      <small class="pull-right">
+        <a href="{{pathFor 'Station' _id=Neighboor._id._str}}">
+          <i class="fa fa-map-marker fa-fw"></i>{{Neighboor.name}}
+        </a>
+        @ {{Neighboor.distance}} km</small>
+    </h2>
+  </div>
 
+<div class="row">
+  <div class="col-lg-4 col-md-6 col-sm-12" id="yearly-bubble-chart"></div>
+  <div class="col-lg-8 col-md-6 col-sm-12">
+    <div class="row">
+      <div class="col-lg-5 col-md-6 col-sm-12" id="monthly-temperature-chart"></div>
+      <div class="col-lg-5 col-md-6 col-sm-12" id="monthly-precipitation-chart"></div>
+      <div class="col-lg-2 col-md-6 col-sm-12" id="rain-or-not"></div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-12" id="daily-temperature-hist-chart"></div>
+      <div class="col-lg-6 col-md-6 col-sm-12" id="daily-precipitation-hist-chart"></div>
+    </div>
+  </div>
 </div>
-<div id="monthly-temperature-chart">
-
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12" id="month-year"></div>
+  <div class="col-lg-12 col-md-12 col-sm-12" id="brush-chart"></div>
 </div>
-
-<div id="monthly-precipitation-chart">
-
 </div>
-
-<div id="daily-temperature-hist-chart">
-
-</div>
-
-<div id="daily-precipitation-hist-chart">
-
-</div>
-
-<div id="rain-or-not">
-
-</div>
-
-<div id="month-year">
-
-</div>
-
-<div id="brush-chart">
-
-</div>
-
-{{Neighboor.name}}
-{{Neighboor.distance}} km
 </template>
