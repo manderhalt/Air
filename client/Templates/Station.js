@@ -16,8 +16,8 @@ Template.Station.onRendered(function(){
   var DailyTemperatureHistChart = dc.barChart('#daily-temperature-hist-chart');
   var DailyPrecipitationHistChart = dc.barChart('#daily-precipitation-hist-chart');
   var rainOrNotChart = dc.pieChart('#rain-or-not');
-  // var monthYearChart = dc.compositeChart('#month-year');
-  // var brushChart = dc.barChart('#brush-chart');
+  var monthYearChart = dc.compositeChart('#month-year');
+  var brushChart = dc.barChart('#brush-chart');
 
   var data = Climat.find(
     {
@@ -41,8 +41,8 @@ Template.Station.onRendered(function(){
   var ndx = crossfilter(data);
   var all = ndx.groupAll();
 
-  var ndx2 = crossfilter(data);
-  var all2 = ndx2.groupAll();
+  //var ndx2 = crossfilter(data);
+  //var all2 = ndx2.groupAll();
 
   function reduce_avg_p(p, v) {
     //console.log(v.temperature)
@@ -129,15 +129,16 @@ Template.Station.onRendered(function(){
     return d.monthyear
   });
 
-  // var monthYearGroup = monthYear.group().reduce(
-  //     reduce_avg_p,reduce_avg_m,reduce_avg_i
-  //     );
-  //
-  // var dayDimension = ndx2.dimension(function (d) {
-  //   return d.date
-  // });
-  //
-  // var dayGroup = dayDimension.group().reduce(
+  var monthYearGroup = monthYear.group().reduce(
+      reduce_avg_p,reduce_avg_m,reduce_avg_i
+      );
+
+  var dayDimension = ndx.dimension(function (d) {
+    return d.date
+  });
+
+  var dayGroup = dayDimension.group(function(x){return x})
+  //.reduce(
   //     reduce_avg_p,reduce_avg_m,reduce_avg_i
   //     );
 
@@ -261,76 +262,83 @@ Template.Station.onRendered(function(){
 
 
     rainOrNotChart
-    .width(300)
-    .height(300)
-    .radius(100)
-    .dimension(rainOrNot)
-    .group(rainOrNotGroup)
-    .label(function (d) {
-        if (rainOrNotChart.hasFilter() && !rainOrNotChart.hasFilter(d.key)) {
-            return d.key + '(0%)';
-        }
-        var label = d.key;
-        if (all.value()) {
-            label += ' (' + Math.floor(d.value / all.value() * 100) + '%)';
-        }
-        return label;
-    })
-    .renderLabel(true)
-    .innerRadius(20)
-    .transitionDuration(500)
+      .width(300)
+      .height(300)
+      .radius(100)
+      .dimension(rainOrNot)
+      .group(rainOrNotGroup)
+      .label(function (d) {
+          if (rainOrNotChart.hasFilter() && !rainOrNotChart.hasFilter(d.key)) {
+              return d.key + '(0%)';
+          }
+          var label = d.key;
+          if (all.value()) {
+              label += ' (' + Math.floor(d.value / all.value() * 100) + '%)';
+          }
+          return label;
+      })
+      .renderLabel(true)
+      .innerRadius(20)
+      .transitionDuration(500)
     //
-    // monthYearChart
-    //   .width(1200)
-    //   .height(300)
-    //   .transitionDuration(0)
-    //   .margins({top: 30, right: 50, bottom: 25, left: 60})
-    //   .dimension(dayDimension)
-    //   .mouseZoomable(true)
-    //   .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
-    //   .round(d3.time.month.round)
-    //   .xUnits(d3.time.months)
-    //   .elasticY(true)
-    //   .elasticX(true)
-    //   .mouseZoomable(false)
-    //   //.rangeChart(brushChart)
-    //   .renderHorizontalGridLines(true)
-    //   //.legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
-    //   .brushOn(false)
-    //   .compose([
-    //       dc.barChart(monthYearChart)
-    //               .group(dayGroup, "Precipitation")
-    //               .valueAccessor(function (d) {
-    //                   return d.value.Psum;
-    //               })
-    //               .ordinalColors(["orange"])
-    //               .useRightYAxis(true),
-    //
-    //       dc.lineChart(monthYearChart)
-    //               .group(dayGroup, "Temperature")
-    //               .valueAccessor(function (d) {
-    //                   return d.value.Tavg;
-    //               })
-    //   ])
-    //   .yAxisLabel("Temperature (°C)")
-    //   .rightYAxisLabel("Precipitation (mm)")
-    //   .renderHorizontalGridLines(true);
+    monthYearChart
+      .width(1200)
+      .height(300)
+      .transitionDuration(0)
+      .margins({top: 30, right: 50, bottom: 25, left: 60})
+      .dimension(monthYear)
+      .mouseZoomable(true)
+      .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
+      .round(d3.time.month.round)
+      .xUnits(d3.time.months)
+      .elasticY(true)
+      .elasticX(true)
+      .mouseZoomable(false)
+      .rangeChart(brushChart)
+      .renderHorizontalGridLines(true)
+      //.legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+      .brushOn(false)
+      .compose([
+          dc.barChart(monthYearChart)
+                  .group(monthYearGroup, "Precipitation")
+                  .valueAccessor(function (d) {
+                    //console.log(d);
+                      return d.value.Psum;
+                  })
+                  .ordinalColors(["blue"])
+                  .useRightYAxis(true),
 
-    // brushChart
-    //   .width(1200)
-    //   .height(60)
-    //   .margins({top: 0, right: 50, bottom: 20, left: 40})
-    //   .dimension(dayDimension)
-    //   .group(dayGroup)
-    //   .centerBar(true)
-    //   .gap(1)
-    //   .valueAccessor(function (d) {
-    //       return d.value.Psum;
-    //   })
-    //   .x(d3.time.scale().domain([new Date(2000, 0, 1), new Date(2014, 11, 31)]))
-    //   .round(d3.time.month.round)
-    //   .alwaysUseRounding(true)
-    //   .xUnits(d3.time.months);
+          dc.lineChart(monthYearChart)
+                  .group(monthYearGroup, "Temperature")
+                  .valueAccessor(function (d) {
+                    //console.log(d);
+                      return d.value.Tavg;
+                  })
+                  .ordinalColors(["orange"])
+                  .on('preRedraw',function(){
+                    console.log('hello')
+                  })
+      ])
+
+      .yAxisLabel("Temperature (°C)")
+      .rightYAxisLabel("Precipitation (mm)")
+      .renderHorizontalGridLines(true);
+
+    brushChart
+      .width(1200)
+      .height(60)
+      .margins({top: 0, right: 50, bottom: 20, left: 40})
+      .dimension(monthYear)
+      .group(monthYearGroup)
+      .centerBar(true)
+      .gap(1)
+      .valueAccessor(function (d) {
+          return d.value.Psum;
+      })
+      .x(d3.time.scale().domain([new Date(2010, 0, 1), new Date(2014, 11, 31)]))
+      .round(d3.time.month.round)
+      .alwaysUseRounding(true)
+      .xUnits(d3.time.months);
 
 dc.renderAll();
 
