@@ -1,0 +1,16 @@
+<template name="Download">
+  <div class="container">
+    <h2>Files Download by Station</h2>
+    {{#each Stations}}
+    {{> file}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="file">
+  <h5><i class="fa fa-map-marker fa-fw"></i><a href="{{pathFor 'Station' _id=this._id._str}}">{{name}}</a></h5>
+  <ul>
+    <li><a href="{{RRFile}}" download="tt">Precipitations </a></li>
+    <li><a href="{{TFile}}" >Temperatures </a></li>
+  </ul>
+</template>

@@ -8,7 +8,7 @@ Meteor.publish("Stations",function(){
     return Stations.find({
       _id:{$in:S},
       name:{$ne:"BLAGNAC AEROP. TOULOUSE-BLAGNAC"}
-    },{fields:{name:1,location:1}});
+    },{fields:{name:1,location:1,sta_id:1}});
 });
 
 Meteor.publish("Climat",function(_id_Station){

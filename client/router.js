@@ -1,6 +1,7 @@
 Router.configure({
     layoutTemplate: 'main',
     loadingTemplate: 'loading',
+    notFoundTemplate: 'NotFound',
     yieldTemplates: {
         'header': { to: 'header' },
         'footer': { to: 'footer' }
@@ -13,17 +14,13 @@ Router.route('home',{
     name: 'home'
 });
 
-
-Router.route('Infos',{
-    template: 'Infos',
-    path: '/Infos',
-    name: 'Infos'
-});
-
 Router.route('Download',{
     template: 'Download',
     path: '/Download',
-    name: 'Download'
+    name: 'Download',
+    waitOn:function(){
+      return Meteor.subscribe("Stations")
+    }
 });
 
 Router.route('Stations',{
